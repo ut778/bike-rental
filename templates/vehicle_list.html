@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Our Fleet</h2>
+    <span class="text-muted">{{ vehicles|length }} vehicles available</span>
+</div>
+
+<!-- Filter Section -->
+<div class="card border-0 shadow-sm mb-5 bg-white">
+    <div class="card-body p-4">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-bold text-uppercase">Vehicle Type</label>
+                <select name="type" class="form-select bg-light border-0">
+                    <option value="">All Categories</option>
+                    <option value="Sedan" {% if request.args.get('type') == 'Sedan' %}selected{% endif %}>Sedan</option>
+                    <option value="SUV" {% if request.args.get('type') == 'SUV' %}selected{% endif %}>SUV</option>
+                    <option value="Hatchback" {% if request.args.get('type') == 'Hatchback' %}selected{% endif %}>Hatchback</option>
+                    <option value="Bike" {% if request.args.get('type') == 'Bike' %}selected{% endif %}>Bike</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label text-muted small fw-bold text-uppercase">Search Model</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="model" class="form-control bg-light border-0" placeholder="e.g. Honda City" value="{{ request.args.get('model', '') }}">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel-fill me-1"></i> Filter</button>
+                <a href="{{ url_for('user.list_vehicles') }}" class="btn btn-light border w-100">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Vehicles Grid -->
+<div class="row g-4">
+    {% for v in vehicles %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 shadow-sm border-0 overflow-hidden">
+            <!-- Decorative colored top border based on status -->
+            <div class="w-100" style="height: 4px; background-color: {% if v.availability_status %}#48BB78{% else %}#F56565{% endif %};"></div>
+            
+            <div class="card-body p-4 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="badge bg-light text-dark border mb-2">{{ v.type }}</span>
+                        <h4 class="card-title fw-bold mb-1">{{ v.model }}</h4>
+                        <p class="text-muted small"><i class="bi bi-hash"></i> {{ v.vehicle_number }}</p>
+                    </div>
+                    <div class="text-end">
+                        <h4 class="text-primary fw-bold mb-0">${{ v.rent_per_hour }}</h4>
+                        <span class="text-muted small">/ hour</span>
+                    </div>
+                </div>
+                
+                <div class="mt-auto pt-3 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-muted small fw-bold text-uppercase">Status</span>
+                        {% if v.availability_status %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i> Available</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 rounded-pill"><i class="bi bi-x-circle-fill me-1"></i> Booked</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if v.availability_status %}
+                        <a href="{{ url_for('user.book_vehicle', vehicle_id=v.vehicle_id) }}" class="btn btn-primary w-100 py-2">Book Now</a>
+                    {% else %}
+                        <button class="btn btn-light w-100 py-2 text-muted" disabled>Currently Unavailable</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <div class="display-1 text-muted mb-3"><i class="bi bi-search"></i></div>
+        <h4>No vehicles found</h4>
+        <p class="text-muted">Try adjusting your filters to find what you're looking for.</p>
+        <a href="{{ url_for('user.list_vehicles') }}" class="btn btn-outline-primary mt-2">Clear Filters</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
